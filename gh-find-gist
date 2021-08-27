@@ -1,0 +1,40 @@
+#!/bin/bash
+set -e
+
+SEARCH_STRING=$1
+COMMAND=$2
+GIST_ID=""
+GIST_FOUND_COUNT=$(gh gist list | awk '{ print $2 }' | grep ${SEARCH_STRING} | wc -l)
+
+echo "Found $GIST_FOUND_COUNT gists matching ${SEARCH_STRING}"
+
+if [[ ${GIST_FOUND_COUNT} -eq 0 ]]; then
+    if [[ ${COMMAND} == "create" ]]; then
+        echo "hello world" | gh gist create -f ${SEARCH_STRING} -
+        gh find-gist ${SEARCH_STRING} edit
+    fi
+    exit 0
+fi
+
+GIST_FILES=$(gh gist list | awk '{ print $2 }' | grep ${SEARCH_STRING})
+
+if [[ ${GIST_FOUND_COUNT} -gt 1 ]]; then
+    echo "Multiple gists found. Be more specific"
+    for GIST in ${GIST_FILES}; do
+        echo ${GIST}
+    done
+    exit 0
+fi
+
+GIST=$(gh gist list | grep ${GIST_FILES})
+GIST_ID=$(echo ${GIST} | awk '{ print $1 }')
+
+if [[ -n ${GIST_ID} ]]; then
+    if [[ -n ${COMMAND} ]]; then
+        gh gist ${COMMAND} ${GIST_ID}
+    else
+        echo "Found gist: ${GIST}"
+    fi
+else
+    echo "There was a problem parsing the found gist"
+fi
