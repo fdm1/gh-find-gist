@@ -1,10 +1,11 @@
 #!/bin/bash
 set -e
 
+GH_GIST_LIST="gh gist list -L 1000"
 SEARCH_STRING=$1
 COMMAND=$2
 GIST_ID=""
-GIST_FOUND_COUNT=$(gh gist list | awk '{ print $2 }' | grep ${SEARCH_STRING} | wc -l)
+GIST_FOUND_COUNT=$(${GH_GIST_LIST} | awk '{ print $2 }' | grep ${SEARCH_STRING} | wc -l)
 
 echo "Found $GIST_FOUND_COUNT gists matching ${SEARCH_STRING}"
 
@@ -16,7 +17,7 @@ if [[ ${GIST_FOUND_COUNT} -eq 0 ]]; then
     exit 0
 fi
 
-GIST_FILES=$(gh gist list | awk '{ print $2 }' | grep ${SEARCH_STRING})
+GIST_FILES=$(${GH_GIST_LIST} | awk '{ print $2 }' | grep ${SEARCH_STRING})
 
 if [[ ${GIST_FOUND_COUNT} -gt 1 ]]; then
     echo "Multiple gists found. Be more specific"
@@ -26,7 +27,7 @@ if [[ ${GIST_FOUND_COUNT} -gt 1 ]]; then
     exit 0
 fi
 
-GIST=$(gh gist list | grep ${GIST_FILES})
+GIST=$(${GH_GIST_LIST} | grep ${GIST_FILES})
 GIST_ID=$(echo ${GIST} | awk '{ print $1 }')
 
 if [[ -n ${GIST_ID} ]]; then
